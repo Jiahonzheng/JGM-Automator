@@ -1,7 +1,10 @@
 from target import TargetType
 from cv import UIMatcher
 import uiautomator2 as u2
+import time
 
+def TIME():
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 
 class Automator:
     def __init__(self, device: str, targets: dict):
@@ -10,23 +13,43 @@ class Automator:
         """
         self.d = u2.connect(device)
         self.targets = targets
+        self.count = 0
+        self.harvestCount = 0
+        self.trainMode = True
+        
+#com.tencent.jgm
 
     def start(self):
         """
         启动脚本，请确保已进入游戏页面。
         """
+        # temptime = time.time()
         while True:
-            # 判断是否出现货物。
-            for target in TargetType:
-                self._match_target(target)
+            try:
+                if self.trainMode:
+                    self.d.app_start("com.tencent.jgm")
+                    self.isHarvest = False
+                time.sleep(40)
+                self.d.click(1, 1919)
+                # 判断是否出现货物。
+                for target in TargetType:
+                    self._match_target(target)
 
-            # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
-            # 当然，也可以使用图像探测的模式。
-            self.d.click(550, 1650)
+                self._swipe()
+                self._upgrade(1)
 
-            # 滑动屏幕，收割金币。
-            self._swipe()
-
+                if self.trainMode:
+                    self.count = self.count + 1
+                    if self.isHarvest:
+                        self.harvestCount = self.harvestCount + 1
+                        print(f"{TIME()} 收获！{self.harvestCount}/{self.count}")
+                    else:
+                        print(f"{TIME()} 未收获……{self.harvestCount}/{self.count}")
+                    self.d.app_stop("com.tencent.jgm")
+                    time.sleep(2)
+                
+            except Exception as e:
+                print(e)
     def _swipe(self):
         """
         滑动屏幕，收割金币。
@@ -36,7 +59,14 @@ class Automator:
             sx, sy = self._get_position(i * 3 + 1)
             ex, ey = self._get_position(i * 3 + 3)
             self.d.swipe(sx, sy, ex, ey)
-
+    def _upgrade(self,id):
+        self.d.click(1000, 1100)
+        sx, sy=self._get_position(id)
+        self.d.click(sx, sy)
+        time.sleep(1)
+        self.d.click(800, 1800)
+        time.sleep(1)
+        self.d.click(1000, 1100)
     @staticmethod
     def _get_position(key):
         """
@@ -69,7 +99,7 @@ class Automator:
         screen = self.d.screenshot(format="opencv")
 
         # 由于 OpenCV 的模板匹配有时会智障，故我们探测次数实现冗余。
-        counter = 6
+        counter = 4
         while counter != 0:
             counter = counter - 1
 
@@ -80,7 +110,7 @@ class Automator:
             # 实现冗余的原因：返回的货物屏幕位置与实际位置存在偏差，导致移动失效
             if result is None:
                 break
-
+            self.isHarvest = True
             sx, sy = result
             # 获取货物目的地的屏幕位置。
             ex, ey = self._get_target_position(target)
