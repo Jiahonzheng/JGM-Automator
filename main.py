@@ -13,7 +13,7 @@ if __name__ == '__main__':
     }
 
     # 连接 adb 。
-    instance = Automator('127.0.0.1:7555', targets)
+    instance = Automator('QV7039V30X', targets)
 
     # 启动脚本。
     instance.start()
