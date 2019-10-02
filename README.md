@@ -41,3 +41,7 @@ python -m pip install --pre weditor
 # 启动 Weditor
 python -m weditor
 ```
+
++ 货物素材
+
+我们可以自行制作货物的素材：先生成屏幕快照，随后在**实际大小**下，截取货物图片，保存至 `targets/` 目录下，并在 `target.py` 声明对应的货物种类及其图片路径。
