@@ -1,6 +1,10 @@
 # JGM Automator
 
-> 这是基于 OpenCV 模板匹配的《家国梦》游戏自动化脚本。
+> 基于 https://github.com/Jiahonzheng/JGM-Automator 改进而来
+> 改的地方比较多，我怕合并回去和作者原思路冲突太大，就先放着吧
+> 取消了训练模式的设定，并且将模板匹配改为特征值匹配
+> 提高了搜索速度
+> 不再要求原分辨率图片，理论上对手机或模拟器分辨率只要求16:9
 
 ## 安装与运行
 
@@ -41,3 +45,7 @@ python -m pip install --pre weditor
 # 启动 Weditor
 python -m weditor
 ```
+
++ 货物素材
+
+我们可以自行制作货物的素材：先生成屏幕快照，~~随后在**实际大小**下~~，截取货物图片，保存至 `targets/` 目录下，并在 `target.py` 声明对应的货物种类及其图片路径。
