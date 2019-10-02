@@ -1,6 +1,7 @@
 from target import TargetType
 from cv import UIMatcher
 import uiautomator2 as u2
+import time,random
 
 
 class Automator:
@@ -23,9 +24,22 @@ class Automator:
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 当然，也可以使用图像探测的模式。
             self.d.click(550, 1650)
-
+            self._upgrade(2)
+            self._upgrade(4)
+            # self._upgrade(random.randint(1,9))
+            # self._upgrade(random.randint(1,9))
             # 滑动屏幕，收割金币。
             self._swipe()
+
+    def _upgrade(self,id):
+        self.d.click(1000, 1100)
+        sx, sy=self._get_position(id)
+        self.d.click(sx, sy)
+        time.sleep(0.5)
+        self.d.click(860, 1760)
+        time.sleep(0.5)
+        self.d.click(1000, 1100)
+        
 
     def _swipe(self):
         """
@@ -35,7 +49,7 @@ class Automator:
             # 横向滑动，共 3 次。
             sx, sy = self._get_position(i * 3 + 1)
             ex, ey = self._get_position(i * 3 + 3)
-            self.d.swipe(sx, sy, ex, ey)
+            self.d.swipe(sx-100, sy+70, ex, ey)
 
     @staticmethod
     def _get_position(key):
@@ -67,7 +81,7 @@ class Automator:
         """
         # 获取当前屏幕快照
         screen = self.d.screenshot(format="opencv")
-
+        
         # 由于 OpenCV 的模板匹配有时会智障，故我们探测次数实现冗余。
         counter = 6
         while counter != 0:
