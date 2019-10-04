@@ -33,58 +33,34 @@
 
 from target import TargetType
 import numpy as np
-import cv2
+import cv,cv2
 import matplotlib.pyplot as plt
 import automator
 
-
-        
-        
-# # 获取对应货物的图片。
-# # 有个要点：通过截屏制作货物图片时，请在快照为实际大小的模式下截屏。
-# # img0 = cv2.imread('./targets/test/Screenshot.png',0) # query image
-# # img1 = cv2.imread('./targets/cross.jpg',0)  # train image
-# screen = cv2.imread('./targets/test/Mu.png',0)
-# template = cv2.imread('./targets/test/Cross.png',0)
-# x, y = template.shape[0:2]
-# # cv2.imshow(screen,1)
-# height=len(screen)
-# width=len(screen[0])
-# screen = screen[int(0.6*height):height,int(0.5*width):width]
-# # cv2.namedWindow("Image") 
-# # cv2.imshow("Image", screen) 
-# # # cv2.waitKey(0) ti
-# # time.sleep(1)
-# # cv2.destroyAllWindows()
-# # 获取货物图片的宽高。
-# th, tw = template.shape[:2]
-
-# # 调用 OpenCV 模板匹配。
-# res = cv2.matchTemplate(screen, template, cv2.TM_SQDIFF_NORMED)
-# min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-# left_top = max_loc  # 左上角
-# right_bottom = (left_top[0] + tw, left_top[1] + th)  # 右下角
-# cv2.rectangle(screen, left_top, right_bottom, 255, 2)  # 画出矩形位置
-# plt.imshow(screen, cmap='gray')
+# img0 = cv2.imread('./targets/test/Screenshot.png') # query image
+# plt
+# print(len(img0))
+# print(len(img0[0]))
+# plt.imshow(img0)
 # plt.show()
-
-# # 矩形左上角的位置。
-# tl = min_loc
-
-# # 阈值判断。
-# if min_val > 0.15:
-#     print(0)
-# else:
-#     print(1)
-
-
+# print(cv.UIMatcher.getPixel(img0,0.974,0.615))       
+    
     
 min_match_count = 5
-img0 = cv2.imread('./targets/test/Mu2.png',0) # query image
-img1 = cv2.imread('./targets/Cotton.jpg',0)  # train image
+img0 = cv2.imread('./targets/test/Mu3.png') # query image
+img1 = cv2.imread('./targets/Coal.jpg')  # train image
 height=len(img0)
 width=len(img0[0])
-img2 = img0[int(0.65*height):int(0.9*height),int(0.5*width):width]
+img2 = img0[int(0.65*height):int(0.9*height),int(0.5*width):width] # 截取截屏的右下角
+hh=len(img2)
+ww=len(img2[0])
+cover1 = np.array([[[0,0], [ww,0], [ww,int(0.28*hh)], [0,int(hh*0.83)]]], dtype = np.int32) #绘制遮罩1
+cover2 = np.array([[[ww,hh], [int(ww*0.9),hh], [int(ww*0.2),hh], [ww,int(0.5*hh)]]], dtype = np.int32) #绘制遮罩2
+img2 = cv2.fillPoly(img2, cover1,  (58,190,149))
+img2 = cv2.fillPoly(img2, cover2,  (58,190,149))
+plt.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB), cmap='gray')
+plt.show()
+
 
 sift = cv2.xfeatures2d.SIFT_create()
 kp1, des1 = sift.detectAndCompute(img1, None)
@@ -115,12 +91,12 @@ if len(good) > min_match_count:
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
     matchesMask = mask.ravel().tolist()
     # 获取原图像的高和宽
-    h, w = img1.shape
+    h, w = len(img1),len(img1[0])
     # 使用得到的变换矩阵对原图想的四个变换获得在目标图像上的坐标
     pts = np.float32([[0, 0], [0, h -1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
     dst = cv2.perspectiveTransform(pts, M)
     # 将原图像转换为灰度图
-    print(1)
+    img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
 else:
     # print('Not enough matches are found - %d/%d' % (len(good), min_match_count))
     matchesMask = None
