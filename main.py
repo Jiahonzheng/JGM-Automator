@@ -13,8 +13,7 @@ if __name__ == '__main__':
     Device1Net = '10.21.20.105'
     Device2Net = '10.21.59.70'
     MuMu = '127.0.0.1:7555'
-    instance = Automator(Device1, up_list, harvest_filter)
+    instance = Automator(Device2, up_list, harvest_filter)
     # 启动脚本。
     instance.start()
-    # instance.start_without_train()
     

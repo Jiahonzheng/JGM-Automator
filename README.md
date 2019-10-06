@@ -1,6 +1,7 @@
 # JGM Automator
 
-* 基于 https://github.com/Jiahonzheng/JGM-Automator 改进
+* 🔥🔥🔥自动升级政策
+* 基于 https://github.com/Jiahonzheng/JGM-Automator ~~改进~~ 基本上改的面目全非了。。。
 * ~~基于opencv的特征值匹配 [CSDN博客](https://blog.csdn.net/github_39611196/article/details/81164752)~~
 * ~~更改搜索逻辑，大幅提高了搜索速度 ~~
 * ~~货物不再要求原分辨率图片，理论上对手机或模拟器分辨率只要求16:9~~
@@ -35,11 +36,6 @@ python main.py
 ```
 因为火车识别还不是很准确，这里用了个折中的方法：
 
-在main.py中，注释两者其一可以选择是只收金币还是收火车一起
-```py
-    instance.start()
-    # instance.start_without_train()
-```
 
 ## 说明
 
@@ -58,12 +54,13 @@ python main.py
   ```
 
 ## 实现细节
-* 收火车时，先点按货物，然后检测绿光获取货物目的地：
-<img src="./targets/test/Diff2.png" style="zoom:40%" />
+
+### 政策升级界面为检测绿色箭头实现
+* <img src="./assets/Policies2.png" style="zoom:30%" />
+* 先分离三个通道二值化，再检测轮廓
+* <img src="./assets/ArrowFind.png" style="zoom:40%" />
+### 收火车时，先点按货物，然后检测绿光获取货物目的地：
+* <img src="./assets/Diff2.png" style="zoom:40%" />
 * 实现这一功能时，若使用原生adb shell实现的话需要多线程或者多进程才行（分别执行按住和截图命令）
 在这里由于uiautomator的强大轮子使得我可以很方便的实现这一功能。
 
-### 以下功能已废弃：
-+ ~~截图后，分割右下角，并打上遮罩，提高特征值匹配速度，减少错误：~~
-+ <img src="./targets/test/Figure_1.png" style="zoom:40%" />
-+ <img src="./targets/test/Figure_2.png" style="zoom:40%" />
