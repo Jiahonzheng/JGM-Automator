@@ -1,4 +1,4 @@
-# JGM Automator
+# Simple-JiaGuoMeng-Agent
 
 * 🔥🔥🔥自动升级政策
 * 基于 https://github.com/Jiahonzheng/JGM-Automator ~~改进~~ 基本上改的面目全非了。。。
@@ -34,7 +34,6 @@ python -m uiautomator2 init
 ``` bash
 python main.py
 ```
-因为火车识别还不是很准确，这里用了个折中的方法：
 
 
 ## 说明
