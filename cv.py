@@ -102,10 +102,10 @@ class UIMatcher:
             return True
 
     @staticmethod
-    def getPixel(img0, rx, ry):
+    def getPixel(img, rx, ry):
         """
         获取某一坐标的RGB值(灰度图会报错)
         """
-        img=cv2.cvtColor(img0, cv2.COLOR_BGR2RGB)
-        return img[int(ry*len(img)), int(rx*len(img[0]))]
+        pixel = img[int(ry*len(img)), int(rx*len(img[0]))]
+        return pixel[2],pixel[1],pixel[0]
 

@@ -1,21 +1,22 @@
 from target import TargetType
 from cv import UIMatcher
 import uiautomator2 as u2
-import time,random
+import time,random,cv2
+import matplotlib.pyplot as plt
 
 
 
 class Automator:
-    def __init__(self, device: str, targets: dict, upgrade_list: list, harvest_filter:list):
+    def __init__(self, device: str, upgrade_list: list, harvest_filter:list):
         """
         device: 如果是 USB 连接，则为 adb devices 的返回结果；如果是模拟器，则为模拟器的控制 URL 。
         """
         self.d = u2.connect(device)
-        self.targets = targets
         self.upgrade_list = upgrade_list
         self.harvest_filter = harvest_filter
+        self.dWidth, self.dHeight = self.d.window_size()
+        self.appRunning = False
         
-
     def start(self):
         """
         启动脚本，请确保已进入游戏页面。
@@ -31,39 +32,60 @@ class Automator:
             火车停稳后只搜索固定次数（比如5次），超过搜索次数后就不搜索了，继续收金币和升级
         '''
         while True:
-            # 判断火车
-            screen = self.d.screenshot(format="opencv")
-           
-            if UIMatcher.trainParking(screen):
-                
-                if trainStop is False:
-                    
-                    time.sleep(0.5) # 等火车停稳
-                    print("[%s] Train come!"%time.asctime())
-                if trainCount < 5 and findSomething:
-                    self._harvest(self.harvest_filter)
-                else:
-                    findSomething = False
-                    self._upgrade(self.upgrade_list)
-                    # 滑动屏幕，收割金币。
-                    self._swipe()
-                    pass
-                trainStop = True
-                trainCount += 1
+            if self.d.app_wait("com.tencent.jgm", front=True):
+                print('App is front.')
+                if not self.appRunning:
+                    # 从后台换到前台，留一点反应时间
+                    print("JGM agent start in 5 seconds")
+                    time.sleep(5) 
+                self.appRunning = True
+            else:
+                print('Not Running.')
+                self.appRunning = False
                 continue
+
+            # 判断火车,但是准确率不好，还要再改
+            screen = self.d.screenshot(format="opencv")
+            if UIMatcher.trainParking(screen):
+                print("[%s] Train come!"%time.asctime())
+                self._harvest2(self.harvest_filter)
+                self._upgrade([random.choice(self.upgrade_list)])
+                # 滑动屏幕，收割金币。
+                self._swipe()
             else:
                 print("[%s] No Train."%time.asctime())
                 findSomething = True
                 trainStop = False
                 trainCount = 0
-
-
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
-            # 当然，也可以使用图像探测的模式。
-            self.d.click(550, 1650)
-            self._upgrade(self.upgrade_list)
+            # 不管它出不出现，每次都点一下 确定 所在的位置
+            self.d.click(550/1080, 1650/1920)
+            self._upgrade([random.choice(self.upgrade_list)])
             # 滑动屏幕，收割金币。
             self._swipe()
+
+    def start_without_train(self):
+        """
+        只收金币和升级，不收火车
+        """
+        trainCount = 0
+        while True:
+            trainCount = (trainCount+1) % 2
+            if self.d.app_wait("com.tencent.jgm", front=True, timeout=1):
+                if not self.appRunning:
+                    # 从后台换到前台，留一点反应时间
+                    print("JGM agent start in 5 seconds")
+                    time.sleep(5)
+                if trainCount:
+                    self._upgrade([random.choice(self.upgrade_list)])
+                else:
+                    self._swipe()
+                
+                self.appRunning = True
+            else:
+                print('App not running.')
+                self.appRunning = False
+                continue
 
     def _upgrade_one_with_count(self,id,count):
         sx, sy=self._get_position(id)
@@ -72,9 +94,52 @@ class Automator:
         for i in range(count):
             self.d.click(0.798, 0.884)
             # time.sleep(0.1)
-    
-    def _switch_upgrade_interface(self):
-        self.d.click(0.9, 0.57)
+
+    def guess_good(self, good_id):
+        '''
+        按住货物，探测绿光出现的位置
+        这一段应该用numpy来实现，奈何我对numpy不熟。。。
+        '''
+        diff_screen = self.get_screenshot_while_touching(GOODS_POSITIONS[good_id])
+        pos_ID = 0   
+        for pos_ID in range(1,10):
+            # print('hhhh')
+            x,y = GOODS_SAMPLE_POSITIONS[pos_ID]
+            lineCount = 0
+            for line in range(-2,7): #划8条线, 任意2条判定成功都算
+                R,G,B = 0,0,0
+                for i in range(-10,10):# 取一条线上10个点,取平均值
+                    r,g,b = UIMatcher.getPixel(diff_screen, (x+1.73*i)/540,(y+line+i)/960)
+                    R+=r
+                    G+=g
+                    B+=b
+                # 如果符合绿光的条件
+                if R/10 >220   and G/10 < 70:
+                    lineCount += 1
+            # print (R/10,G/10,B/10,pos_ID)            
+            if lineCount > 1:
+                print(pos_ID)
+                return pos_ID
+        return 0
+
+    def get_screenshot_while_touching(self, location, pressed_time=0.2):
+        '''
+        Get screenshot with screen touched.
+        '''
+        screen2 = self.d.screenshot(format="opencv")
+        h,w = len(screen2),len(screen2[0])
+        x,y = (location[0] * w,location[1] *h)
+        # 按下
+        self.d.touch.down(x,y)
+        # print('[%s]Tapped'%time.asctime())
+        time.sleep(pressed_time)
+        # 截图
+        screen = self.d.screenshot(format="opencv")
+        # print('[%s]Screenning'%time.asctime())
+        # 松开
+        self.d.touch.up(x,y)
+        # 返回按下前后两幅图的差值
+        return screen- screen2
 
     def _open_upgrade_interface(self):
         screen = self.d.screenshot(format="opencv")
@@ -125,45 +190,51 @@ class Automator:
         }
         return positions.get(key)
 
-    def _get_target_position(self, target: TargetType):
-        """
-        获取货物要移动到的屏幕位置。
-        """
-        # print("Target Number =%d"%self.targets.get(target))
-        return self._get_position(self.targets.get(target))
+
+    def _harvest2(self,building_filter):
+        '''
+        新的傻瓜搬货物方法,先按住截图判断绿光探测货物目的地,再搬
+        '''
+        for good in range(1,4):
+            time.sleep(0.2)
+            screen = self.d.screenshot(format="opencv")
+            if not UIMatcher.trainParking(screen):
+                return
+            pos_id = self.guess_good(good)
+            if pos_id != 0 and pos_id in building_filter:
+                # 搬5次
+                print("got")
+                self._move_good_by_id(good, self._get_position(pos_id), times=4)
+                time.sleep(0.2)
+             
 
 
-
-    def _harvest(self, building_filter):
-        """
-        探测货物，并搬运货物，过滤想要的建筑位置号
-        @param: 需要收取的坐标列表
-        @return: 货物坐标，货物类型
-        """
-        # 获取当前屏幕快照
-        detected = None
-        screen = self.d.screenshot(format="opencv")
-        
-        for target in TargetType:
-            # print("Detecting %s"%target, end="")
-            detected = UIMatcher.match2(screen, target)
-            if detected is not None:
-                # 如果在过滤列表里
-                if self.targets.get(target) not in building_filter:
-                    print("Skip ---%s---."%target)
-                    continue
-                print("Detected +++%s+++."%target)
-                # 搬运5次
-                for itr in range(5):
-                    self._move_good(target, detected)
-                detected = None
-            # else:
-            #     # print("")
-                    
-    def _move_good(self, good: TargetType, source):
+    def _move_good_by_id(self, good: int, source, times=1):
         try:
-            ex, ey = self._get_target_position(good)
-            sx, sy = source
-            self.d.swipe(sx, sy, ex, ey)
+            sx, sy = GOODS_POSITIONS[good]
+            ex, ey = source
+            for i in range(times):
+                self.d.drag(sx, sy, ex, ey, duration = 0.1)
+                time.sleep(0.2)
         except(Exception):
-            pass
+            pass    
+
+      
+
+def showimg(screen):
+    plt.imshow(cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
+    plt.show()
+
+GOODS_POSITIONS = { 1: (0.609,0.854),
+                    2: (0.758,0.815),
+                    3: (0.896,0.766)}
+
+GOODS_SAMPLE_POSITIONS = {  1: (98, 634),
+                            2: (226, 569),
+                            3: (346, 508),
+                            4: (96, 503),
+                            5: (221, 439),
+                            6: (346, 377),
+                            7: (100, 379),
+                            8: (223, 316),
+                            9: (349, 249)}
