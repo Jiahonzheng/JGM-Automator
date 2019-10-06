@@ -1,5 +1,4 @@
 from automator import Automator
-from target import TargetType
 
 if __name__ == '__main__':
     # 升级建筑列表, 实际升级是随机从这个列表中挑一个升级

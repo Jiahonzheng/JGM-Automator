@@ -177,3 +177,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/macos,python,opencv,windows
+log.txt

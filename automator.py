@@ -1,4 +1,3 @@
-from target import TargetType
 from cv import UIMatcher
 import uiautomator2 as u2
 import time,random,cv2
@@ -186,8 +185,6 @@ class Automator:
         '''
         short_wait()
         screen = self.d.screenshot(format="opencv")
-        if not UIMatcher.trainParking(screen):
-            return
         pos_id = self.guess_good(good)
         if pos_id != 0 and pos_id in building_filter:
             # 搬5次
