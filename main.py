@@ -7,13 +7,16 @@ if __name__ == '__main__':
     up_list = [(8,1),(9,1)] # 这个号建筑升级1次， 那个号建筑升级1次
     # 收货过滤列表
     harvest_filter = [2,3,4,5,6,7,8,9] # 收取这些号建筑的货物
-    # 连接 adb 。
+    # adb设备列表
     Device1 = 'QV7039V30X'
     Device2 = 'CB512BC4ZL'
     Device1Net = '10.21.20.105'
     Device2Net = '10.21.59.70'
     MuMu = '127.0.0.1:7555'
-    instance = Automator(Device2, up_list, harvest_filter)
+
+    policy = True # 是否自动升级政策
+    task = True # 是否自动完成任务
+    instance = Automator(Device2, up_list, harvest_filter,auto_policy=policy,auto_task=task)
     # 启动脚本。
     instance.start()
     

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class Automator:
-    def __init__(self, device: str, upgrade_list: list, harvest_filter:list):
+    def __init__(self, device: str, upgrade_list: list, harvest_filter:list, auto_task = False, auto_policy = True):
         """
         device: 如果是 USB 连接，则为 adb devices 的返回结果；如果是模拟器，则为模拟器的控制 URL 。
         """
@@ -16,6 +16,8 @@ class Automator:
         self.dWidth, self.dHeight = self.d.window_size()
         print(self.dWidth, self.dHeight)
         self.appRunning = False
+        self.auto_task = auto_task
+        self.auto_policy = auto_policy
         
     def start(self):
         """
@@ -36,6 +38,8 @@ class Automator:
             
             # 判断是否可升级政策
             self.check_policy()
+            # 判断是否可完成任务
+            self.check_task()
             # 判断货物那个叉叉是否出现
             good_id = self._has_good()
             if len(good_id) > 0:
@@ -230,8 +234,10 @@ class Automator:
         return False
 
     def check_policy(self):
+        if not self.auto_policy:
+            return
         # 看看政策中心那里有没有冒绿色箭头气泡
-        if len(UIMatcher.findArrow(self.d.screenshot(format="opencv"))):
+        if len(UIMatcher.findGreenArrow(self.d.screenshot(format="opencv"))):
             # 打开政策中心
             self.d.click(0.206, 0.097)
             mid_wait()
@@ -242,16 +248,28 @@ class Automator:
             # 开始找绿色箭头
             for i in range(5):
                 screen = self.d.screenshot(format="opencv")
-                arrows = UIMatcher.findArrow(screen)
+                arrows = UIMatcher.findGreenArrow(screen)
                 if len(arrows):
                     x,y = arrows[0]
                     self.d.click(x,y) # 点击这个政策
                     short_wait()
                     self.d.click(0.511, 0.614) # 确认升级
-                    print("[%s] Policy upgraded"%time.asctime())
+                    print("[%s] Policy upgraded.    ++++++"%time.asctime())
                     self._back_to_main()
 
                     return
+            self._back_to_main()
+
+    def check_task(self):
+        if not self.auto_task:
+            return
+        # 看看任务中心有没有冒黄色气泡
+        screen = self.d.screenshot(format="opencv")
+        if UIMatcher.findTaskBubble(screen):
+            self.d.click(0.16, 0.84) # 打开城市任务
+            short_wait()
+            self.d.click(0.51, 0.819) # 点击 完成任务
+            print("[%s] Task finished.    ++++++"%time.asctime())
             self._back_to_main()
 
     def _slide_to_top(self):
