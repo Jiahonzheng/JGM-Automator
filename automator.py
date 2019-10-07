@@ -7,7 +7,7 @@ import random
 
 
 class Automator:
-    def __init__(self, device: str, upgrade_list: list, harvest_filter:list, auto_task = False, auto_policy = True):
+    def __init__(self, device: str, upgrade_list: list, harvest_filter:list, auto_task = False, auto_policy = True, speedup = True):
         """
         device: 如果是 USB 连接，则为 adb devices 的返回结果；如果是模拟器，则为模拟器的控制 URL 。
         """
@@ -19,6 +19,7 @@ class Automator:
         self.appRunning = False
         self.auto_task = auto_task
         self.auto_policy = auto_policy
+        self.loot_speedup = speedup
         
     def start(self):
         """
@@ -52,6 +53,17 @@ class Automator:
             else:
                 print("[%s] No Train."%time.asctime())
                 findSomething = True
+            
+            # 再看看是不是有货没收，如果有就重启app
+            good_id = self._has_good()
+            if len(good_id) > 0 and self.loot_speedup:
+                self.d.app_stop("com.tencent.jgm")
+                print("[%s] Reset app."%time.asctime())
+                time.sleep(2)
+                # 重新启动app
+                self.d.app_start("com.tencent.jgm")
+                continue
+
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 不管它出不出现，每次都点一下 确定 所在的位置
             self.d.click(550/1080, 1650/1920)
@@ -70,7 +82,7 @@ class Automator:
         滑动屏幕，收割金币。
         """
         try:
-            print("[%s] Swiped."%time.asctime())
+            # print("[%s] Swiped."%time.asctime())
             for i in range(3):
                 # 横向滑动，共 3 次。
                 sx, sy = BUILDING_POSITIONS[i * 3 + 1]
@@ -241,6 +253,3 @@ class Automator:
         for i in range(3):
             self.d.click(0.057, 0.919)
             short_wait()
-              
-
-
