@@ -1,7 +1,8 @@
 from cv import UIMatcher
+from util import *
 import uiautomator2 as u2
-import time,random,cv2
-import matplotlib.pyplot as plt
+import random
+
 
 
 
@@ -44,52 +45,53 @@ class Automator:
             good_id = self._has_good()
             if len(good_id) > 0:
                 print("[%s] Train come."%time.asctime())
-                self._harvest2(self.harvest_filter, good_id)
-                self._upgrade([random.choice(self.upgrade_list)])
+                self.harvest(self.harvest_filter, good_id)
+                self.upgrade([random.choice(self.upgrade_list)])
                 # 滑动屏幕，收割金币。
-                self._swipe()
+                self.swipe()
             else:
                 print("[%s] No Train."%time.asctime())
                 findSomething = True
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 不管它出不出现，每次都点一下 确定 所在的位置
             self.d.click(550/1080, 1650/1920)
-            self._upgrade([random.choice(self.upgrade_list)])
+            self.upgrade([random.choice(self.upgrade_list)])
             # 滑动屏幕，收割金币。
-            self._swipe()
+            self.swipe()
 
-    def start_without_train(self):
+    def upgrade(self, upgrade_list):
+        self._open_upgrade_interface()
+        for building,count in upgrade_list:
+           self._upgrade_one_with_count(building,count) 
+        self._close_upgrade_interface()
+    
+    def swipe(self):
         """
-        只收金币和升级，不收火车
+        滑动屏幕，收割金币。
         """
-        trainCount = 0
-        while True:
-            self.check_policy()
-            trainCount = (trainCount+1) % 2
-            if self.d.app_wait("com.tencent.jgm", front=True, timeout=1):
-                if not self.appRunning:
-                    # 从后台换到前台，留一点反应时间
-                    print("JGM agent start in 5 seconds")
-                    time.sleep(5)
-                if trainCount:
-                    self._upgrade([random.choice(self.upgrade_list)])
-                else:
-                    self._swipe()
-                
-                self.appRunning = True
-            else:
-                print('App not running.')
-                self.appRunning = False
-                continue
+        try:
+            print("[%s] Swiped."%time.asctime())
+            for i in range(3):
+                # 横向滑动，共 3 次。
+                sx, sy = BUILDING_POSITIONS[i * 3 + 1]
+                ex, ey = BUILDING_POSITIONS[i * 3 + 3]
+                self.d.swipe(sx-0.1, sy+0.05, ex, ey)
+        except(Exception):
+            # 用户在操作手机，暂停10秒
+            time.sleep(10)
 
-    def _upgrade_one_with_count(self,id,count):
-        sx, sy=self._get_position(id)
-        self.d.click(sx, sy)
-        time.sleep(0.3)
-        for i in range(count):
-            self.d.click(0.798, 0.884)
-            # time.sleep(0.1)
-
+    def harvest(self,building_filter,goods:list):
+        '''
+        新的傻瓜搬货物方法,先按住截图判断绿光探测货物目的地,再搬
+        '''
+        short_wait()
+        for good in goods:
+            pos_id = self.guess_good(good)
+            if pos_id != 0 and pos_id in building_filter:
+                # 搬5次
+                self._move_good_by_id(good, BUILDING_POSITIONS[pos_id], times=4)
+                short_wait()
+      
     def guess_good(self, good_id):
         '''
         按住货物，探测绿光出现的位置
@@ -134,105 +136,6 @@ class Automator:
         # 返回按下前后两幅图的差值
         return screen- screen2
 
-    def _open_upgrade_interface(self):
-        screen = self.d.screenshot(format="opencv")
-        # 判断升级按钮的颜色，蓝比红多就处于正常界面，反之在升级界面
-        R, G, B = UIMatcher.getPixel(screen,0.974,0.615)
-        if B > R:
-            self.d.click(0.9, 0.57)
-
-    def _close_upgrade_interface(self):
-        screen = self.d.screenshot(format="opencv")
-        # 判断升级按钮的颜色，蓝比红多就处于正常界面，反之在升级界面
-        R, G, B = UIMatcher.getPixel(screen,0.974,0.615)
-        if B < R:
-            self.d.click(0.9, 0.57)
-
-    def _upgrade(self, upgrade_list):
-        self._open_upgrade_interface()
-        for building,count in upgrade_list:
-           self._upgrade_one_with_count(building,count) 
-        self._close_upgrade_interface()
-    
-    def _swipe(self):
-        """
-        滑动屏幕，收割金币。
-        """
-        try:
-            print("[%s] Swiped."%time.asctime())
-            for i in range(3):
-                # 横向滑动，共 3 次。
-                sx, sy = self._get_position(i * 3 + 1)
-                ex, ey = self._get_position(i * 3 + 3)
-                self.d.swipe(sx-0.1, sy+0.05, ex, ey)
-        except(Exception):
-            # 用户在操作手机，暂停10秒
-            time.sleep(10)
-    @staticmethod
-    def _get_position(key):
-        """
-        获取指定建筑的屏幕位置。
-        """
-        positions = {
-            1: (294/1080, 1184/1920),
-            2: (551/1080, 1061/1920),
-            3: (807/1080, 961/1920),
-            4: (275/1080, 935/1920),
-            5: (535/1080, 810/1920),
-            6: (799/1080, 687/1920),
-            7: (304/1080, 681/1920),
-            8: (541/1080, 568/1920),
-            9: (787/1080, 447/1920)
-        }
-        return positions.get(key)
-
-    def _harvest2(self,building_filter,goods:list):
-        '''
-        新的傻瓜搬货物方法,先按住截图判断绿光探测货物目的地,再搬
-        '''
-        short_wait()
-        for good in goods:
-            pos_id = self.guess_good(good)
-            if pos_id != 0 and pos_id in building_filter:
-                # 搬5次
-                self._move_good_by_id(good, self._get_position(pos_id), times=4)
-                short_wait()
-             
-    def _move_good_by_id(self, good: int, source, times=1):
-        try:
-            sx, sy = GOODS_POSITIONS[good]
-            ex, ey = source
-            for i in range(times):
-                self.d.drag(sx, sy, ex, ey, duration = 0.1)
-                short_wait()
-        except(Exception):
-            pass    
-
-    def _has_good(self):
-        '''
-        返回有货的位置列表
-        '''
-        good_list = []
-        screen = self.d.screenshot(format="opencv")  
-        for good_id in CROSS_POSITIONS.keys():
-            if self._detect_cross(screen, CROSS_POSITIONS[good_id]):
-                good_list.append(good_id)
-        return good_list
-       
-    def _detect_cross(self, screen, positon):
-        x,y = positon
-        # print(x,y)
-        R,G,B = 0,0,0
-        for i in range(-4,4):# 取一条45度线线上8个点,取平均值
-            r,g,b = UIMatcher.getPixel(screen, x+i/self.dWidth,y+i/self.dHeight)
-            R+=r
-            G+=g
-            B+=b
-        # 如果符合叉叉（白色）的条件
-        if R/8 >250 and G/8 > 250 and B/8 > 250:
-            return True
-        return False
-
     def check_policy(self):
         if not self.auto_policy:
             return
@@ -272,6 +175,63 @@ class Automator:
             print("[%s] Task finished.    ++++++"%time.asctime())
             self._back_to_main()
 
+    def _open_upgrade_interface(self):
+        screen = self.d.screenshot(format="opencv")
+        # 判断升级按钮的颜色，蓝比红多就处于正常界面，反之在升级界面
+        R, G, B = UIMatcher.getPixel(screen,0.974,0.615)
+        if B > R:
+            self.d.click(0.9, 0.57)
+
+    def _close_upgrade_interface(self):
+        screen = self.d.screenshot(format="opencv")
+        # 判断升级按钮的颜色，蓝比红多就处于正常界面，反之在升级界面
+        R, G, B = UIMatcher.getPixel(screen,0.974,0.615)
+        if B < R:
+            self.d.click(0.9, 0.57)
+
+    def _upgrade_one_with_count(self,id,count):
+        sx, sy=BUILDING_POSITIONS[id]
+        self.d.click(sx, sy)
+        time.sleep(0.3)
+        for i in range(count):
+            self.d.click(0.798, 0.884)
+            # time.sleep(0.1)
+       
+    def _move_good_by_id(self, good: int, source, times=1):
+        try:
+            sx, sy = GOODS_POSITIONS[good]
+            ex, ey = source
+            for i in range(times):
+                self.d.drag(sx, sy, ex, ey, duration = 0.1)
+                short_wait()
+        except(Exception):
+            pass    
+
+    def _has_good(self):
+        '''
+        返回有货的位置列表
+        '''
+        good_list = []
+        screen = self.d.screenshot(format="opencv")  
+        for good_id in CROSS_POSITIONS.keys():
+            if self._detect_cross(screen, CROSS_POSITIONS[good_id]):
+                good_list.append(good_id)
+        return good_list
+       
+    def _detect_cross(self, screen, positon):
+        x,y = positon
+        # print(x,y)
+        R,G,B = 0,0,0
+        for i in range(-4,4):# 取一条45度线线上8个点,取平均值
+            r,g,b = UIMatcher.getPixel(screen, x+i/self.dWidth,y+i/self.dHeight)
+            R+=r
+            G+=g
+            B+=b
+        # 如果符合叉叉（白色）的条件
+        if R/8 >250 and G/8 > 250 and B/8 > 250:
+            return True
+        return False
+
     def _slide_to_top(self):
         for i in range(3):
             self.d.swipe(0.488, 0.302,0.482, 0.822)
@@ -284,28 +244,3 @@ class Automator:
               
 
 
-def short_wait():
-    time.sleep(0.2)
-
-def mid_wait():
-    time.sleep(0.5)
-
-GOODS_POSITIONS = { 1: (0.609,0.854),
-                    2: (0.758,0.815),
-                    3: (0.896,0.766)}
-
-# 绿色光环检测的中心位置  540*960下的绝对位置
-GOODS_SAMPLE_POSITIONS = {  1: (98, 634),
-                            2: (226, 569),
-                            3: (346, 508),
-                            4: (96, 503),
-                            5: (221, 439),
-                            6: (346, 377),
-                            7: (100, 379),
-                            8: (223, 316),
-                            9: (349, 249)}
-
-# 货物的那个叉叉的位置 相对位置
-CROSS_POSITIONS = { 1: (0.632, 0.878),
-                    2: (0.776, 0.836),
-                    3: (991/1080, 1517/1920)}
