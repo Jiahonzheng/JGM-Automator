@@ -37,16 +37,22 @@ class Automator:
             # 判断是否可升级政策
             self.check_policy()
             # 判断货物那个叉叉是否出现
-            good_id = self._has_good()
-            if len(good_id) > 0:
-                print("[%s] Train come."%time.asctime())
-                self._harvest2(self.harvest_filter, good_id)
-                self._upgrade([random.choice(self.upgrade_list)])
-                # 滑动屏幕，收割金币。
-                self._swipe()
-            else:
-                print("[%s] No Train."%time.asctime())
-                findSomething = True
+            # 这里我经过实践发现cv的匹配不是特别好，_harvest2实际单次只存了1个X，
+            # 并没有把train上的所有货物坐标都存下来，所以重复使用3次保证能送货成功
+            for i in range(3):
+                good_id = self._has_good()
+                if len(good_id) > 0:
+                    print("[%s] Train come."%time.asctime())
+                    self._harvest2(self.harvest_filter, good_id)
+                    # 此处调用upgrade和swipe有点冗余
+                    '''
+                    # self._upgrade([random.choice(self.upgrade_list)])
+                    # 滑动屏幕，收割金币。
+                    # self._swipe()
+                    '''
+                else:
+                    print("[%s] No Train."%time.asctime())
+                    findSomething = True
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 不管它出不出现，每次都点一下 确定 所在的位置
             self.d.click(550/1080, 1650/1920)
@@ -191,7 +197,7 @@ class Automator:
             pos_id = self.guess_good(good)
             if pos_id != 0 and pos_id in building_filter:
                 # 搬5次
-                self._move_good_by_id(good, self._get_position(pos_id), times=4)
+                self._move_good_by_id(good, self._get_position(pos_id), times=5)
                 short_wait()
              
     def _move_good_by_id(self, good: int, source, times=1):
