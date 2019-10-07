@@ -26,15 +26,15 @@ class Automator:
         启动脚本，请确保已进入游戏页面。
         """
         while True:
-            # 判断jgm进程是否在前台
-            if self.d.app_wait("com.tencent.jgm", front=True):
+            # 判断jgm进程是否在前台, 最多等待20秒，否则唤醒到前台
+            if self.d.app_wait("com.tencent.jgm", front=True,timeout=20):
                 if not self.appRunning:
                     # 从后台换到前台，留一点反应时间
                     print("App is front. JGM agent start in 5 seconds")
                     time.sleep(5) 
                 self.appRunning = True
             else:
-                print('Not Running.')
+                self.d.app_start("com.tencent.jgm")
                 self.appRunning = False
                 continue
             

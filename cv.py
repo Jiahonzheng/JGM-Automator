@@ -1,5 +1,5 @@
 
-import cv2,numpy as np,matplotlib.pyplot as plt
+import cv2,numpy as np
 
 
 class UIMatcher:
@@ -72,7 +72,3 @@ class UIMatcher:
         pixel = img[int(ry*len(img)), int(rx*len(img[0]))]
         return pixel[2],pixel[1],pixel[0]
 
-    @staticmethod
-    def showimg(screen):
-        plt.imshow(cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
-        plt.show()

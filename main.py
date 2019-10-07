@@ -6,7 +6,7 @@ if __name__ == '__main__':
     # up_list = [(1,1),(1,1),(1,1),(4,3)] # 75%的概率1号升级1次， 25%的概率4号升级3次
     up_list = [(8,1),(9,1)] # 这个号建筑升级1次， 那个号建筑升级1次
     # 收货过滤列表
-    harvest_filter = [2] # 收取这些号建筑的货物
+    harvest_filter = [2,5,7] # 收取这些号建筑的货物
     # adb设备列表
     Device1 = 'QV7039V30X'
     Device2 = 'CB512BC4ZL'
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     policy = True # 是否自动升级政策
     task = True # 是否自动完成任务
     speed_up = True # 是否自动重启加速刷火车
-    instance = Automator(Device1, up_list, harvest_filter,auto_policy=policy,auto_task=task,speedup=speed_up)
+    instance = Automator(Device2, up_list, harvest_filter,auto_policy=policy,auto_task=task,speedup=speed_up)
     # 启动脚本。
     instance.start()
     
