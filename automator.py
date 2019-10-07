@@ -43,6 +43,7 @@ class Automator:
             # 判断是否可完成任务
             self.check_task()
             # 判断货物那个叉叉是否出现
+
             good_id = self._has_good()
             if len(good_id) > 0:
                 print("[%s] Train come."%time.asctime())
