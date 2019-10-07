@@ -48,9 +48,6 @@ class Automator:
             if len(good_id) > 0:
                 print("[%s] Train come."%time.asctime())
                 self.harvest(self.harvest_filter, good_id)
-                self.upgrade([random.choice(self.upgrade_list)])
-                # 滑动屏幕，收割金币。
-                self.swipe()
             else:
                 print("[%s] No Train."%time.asctime())
                 findSomething = True
@@ -161,7 +158,7 @@ class Automator:
             self.d.click(0.077, 0.122)
             # 拉到顶
             self._slide_to_top()
-            # 开始找绿色箭头
+            # 开始找绿色箭头,找不到就往下滑,最多划5次
             for i in range(5):
                 screen = self.d.screenshot(format="opencv")
                 arrows = UIMatcher.findGreenArrow(screen)
@@ -174,6 +171,8 @@ class Automator:
                     self._back_to_main()
 
                     return
+                # 如果还没出现绿色箭头，往下划
+                self.d.swipe(0.482, 0.809, 0.491, 0.516,duration = 0.3)
             self._back_to_main()
 
     def check_task(self):
