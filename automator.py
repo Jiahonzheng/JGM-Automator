@@ -38,7 +38,7 @@ class Automator:
             self.check_policy()
             # 判断货物那个叉叉是否出现
             good_id = self._has_good()
-            if good_id > 0:
+            if len(good_id) > 0:
                 print("[%s] Train come."%time.asctime())
                 self._harvest2(self.harvest_filter, good_id)
                 self._upgrade([random.choice(self.upgrade_list)])
@@ -97,9 +97,9 @@ class Automator:
             # print('hhhh')
             x,y = GOODS_SAMPLE_POSITIONS[pos_ID]
             lineCount = 0
-            for line in range(-2,7): #划8条线, 任意2条判定成功都算
+            for line in range(-2,6): #划8条线, 任意2条判定成功都算
                 R,G,B = 0,0,0
-                for i in range(-10,11):# 取一条线上20个点,取平均值
+                for i in range(-10,10):# 取一条线上20个点,取平均值
                     r,g,b = UIMatcher.getPixel(diff_screen, (x+1.73*i)/540,(y+line+i)/960)
                     R+=r
                     G+=g
@@ -154,13 +154,16 @@ class Automator:
         """
         滑动屏幕，收割金币。
         """
-        print("[%s] Swiped."%time.asctime())
-        for i in range(3):
-            # 横向滑动，共 3 次。
-            sx, sy = self._get_position(i * 3 + 1)
-            ex, ey = self._get_position(i * 3 + 3)
-            self.d.swipe(sx-0.1, sy+0.05, ex, ey)
-
+        try:
+            print("[%s] Swiped."%time.asctime())
+            for i in range(3):
+                # 横向滑动，共 3 次。
+                sx, sy = self._get_position(i * 3 + 1)
+                ex, ey = self._get_position(i * 3 + 3)
+                self.d.swipe(sx-0.1, sy+0.05, ex, ey)
+        except(Exception):
+            # 用户在操作手机，暂停10秒
+            time.sleep(10)
     @staticmethod
     def _get_position(key):
         """
@@ -179,17 +182,17 @@ class Automator:
         }
         return positions.get(key)
 
-    def _harvest2(self,building_filter,good:int):
+    def _harvest2(self,building_filter,goods:list):
         '''
         新的傻瓜搬货物方法,先按住截图判断绿光探测货物目的地,再搬
         '''
         short_wait()
-        screen = self.d.screenshot(format="opencv")
-        pos_id = self.guess_good(good)
-        if pos_id != 0 and pos_id in building_filter:
-            # 搬5次
-            self._move_good_by_id(good, self._get_position(pos_id), times=4)
-            short_wait()
+        for good in goods:
+            pos_id = self.guess_good(good)
+            if pos_id != 0 and pos_id in building_filter:
+                # 搬5次
+                self._move_good_by_id(good, self._get_position(pos_id), times=4)
+                short_wait()
              
     def _move_good_by_id(self, good: int, source, times=1):
         try:
@@ -202,22 +205,26 @@ class Automator:
             pass    
 
     def _has_good(self):
+        '''
+        返回有货的位置列表
+        '''
+        good_list = []
         screen = self.d.screenshot(format="opencv")  
         for good_id in CROSS_POSITIONS.keys():
             if self._detect_cross(screen, CROSS_POSITIONS[good_id]):
-                return good_id
-        return 0
+                good_list.append(good_id)
+        return good_list
        
     def _detect_cross(self, screen, positon):
         x,y = positon
         # print(x,y)
         R,G,B = 0,0,0
-        for i in range(-4,5):# 取一条45度线线上8个点,取平均值
+        for i in range(-4,4):# 取一条45度线线上8个点,取平均值
             r,g,b = UIMatcher.getPixel(screen, x+i/self.dWidth,y+i/self.dHeight)
             R+=r
             G+=g
             B+=b
-            # 如果符合叉叉（白色）的条件
+        # 如果符合叉叉（白色）的条件
         if R/8 >250 and G/8 > 250 and B/8 > 250:
             return True
         return False
@@ -283,4 +290,4 @@ GOODS_SAMPLE_POSITIONS = {  1: (98, 634),
 # 货物的那个叉叉的位置 相对位置
 CROSS_POSITIONS = { 1: (0.632, 0.878),
                     2: (0.776, 0.836),
-                    3: (0.912, 0.794)}
+                    3: (991/1080, 1517/1920)}
