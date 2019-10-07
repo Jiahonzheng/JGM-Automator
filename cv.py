@@ -1,11 +1,11 @@
 
-import cv2,numpy as np,matplotlib.pyplot as plt
+import cv2,numpy as np
 
 
 class UIMatcher:
 
     @staticmethod
-    def findArrow(screen):
+    def findGreenArrow(screen):
         '''
         检测政策界面中 绿箭头的中心位置
         @return: 绿箭头坐标list
@@ -47,6 +47,30 @@ class UIMatcher:
             raise Exception('Screen process is unsuccessful')
     
     @staticmethod
+    def findTaskBubble(screen):
+        '''
+        检测城市任务那块区域黄色气泡是否出现
+        @return: 是否出现
+        '''
+        dstPoints = []
+        h=len(screen)
+        w=len(screen[0])
+        # 截取气泡周围区域
+        img2 = cv2.split(screen[int(0.777*h):int(0.831*h),int(0.164*w):int(0.284*w)])
+        ret, B = cv2.threshold(img2[0], 120, 255, cv2.THRESH_BINARY_INV)
+        ret, G = cv2.threshold(img2[1], 210, 255, cv2.THRESH_BINARY_INV)
+        ret, R = cv2.threshold(img2[2], 230, 255, cv2.THRESH_BINARY)
+        img2 = R&B&G # 相与
+        # 模糊边界
+        img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+        # 找轮廓
+        cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        if len(cnts[1]):
+            return True
+        else:
+            return False
+    
+    @staticmethod
     def getPixel(img, rx, ry):
         """
         获取某一坐标的RGB值(灰度图会报错)
@@ -54,7 +78,3 @@ class UIMatcher:
         pixel = img[int(ry*len(img)), int(rx*len(img[0]))]
         return pixel[2],pixel[1],pixel[0]
 
-    @staticmethod
-    def showimg(screen):
-        plt.imshow(cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
-        plt.show()
