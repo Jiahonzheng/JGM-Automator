@@ -1,12 +1,13 @@
 # Simple-JiaGuoMeng-Agent
 
 * 🔥🔥🔥自动升级政策
-* 基于 https://github.com/Jiahonzheng/JGM-Automator ~~改进~~ 基本上改的面目全非了。。。
-* ~~基于opencv的特征值匹配 [CSDN博客](https://blog.csdn.net/github_39611196/article/details/81164752)~~
-* ~~更改搜索逻辑，大幅提高了搜索速度 ~~
-* ~~货物不再要求原分辨率图片，理论上对手机或模拟器分辨率只要求16:9~~
-* 收货方式改为先按下货物寻找绿光位置再把货物挪过去，简单方便，准确更高
+* 可选自动完成任务
+* 自动收货
+* 自动收金币
+* 自动升级建筑
+* 基于 https://github.com/Jiahonzheng/JGM-Automator 基本上改的面目全非了。。。
 
+* 想只收金色货物的，只要选择收哪些建筑的货就行了，因为金建筑一定是金色货物。
 ## 安装与运行
 运行前的准备：
 
