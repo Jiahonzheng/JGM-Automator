@@ -1,36 +1,80 @@
-from target import TargetType
-import cv2
+
+import cv2,numpy as np
 
 
 class UIMatcher:
-    @staticmethod
-    def match(screen, target: TargetType):
-        """
-        在指定快照中确定货物的屏幕位置。
-        """
-        # 获取对应货物的图片。
-        # 有个要点：通过截屏制作货物图片时，请在快照为实际大小的模式下截屏。
-        template = cv2.imread(target.value)
-        # 获取货物图片的宽高。
-        th, tw = template.shape[:2]
-
-        # 调用 OpenCV 模板匹配。
-        res = cv2.matchTemplate(screen, template, cv2.TM_SQDIFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-        # 矩形左上角的位置。
-        tl = min_loc
-
-        # 阈值判断。
-        if min_val > 0.15:
-            return None
-
-        # 这里，我随机加入了数字（15），用于补偿匹配值和真实位置的差异。
-        return tl[0] + tw / 2 + 15, tl[1] + th / 2 + 15
 
     @staticmethod
-    def read(filepath: str):
+    def findGreenArrow(screen):
+        '''
+        检测政策界面中 绿箭头的中心位置
+        @return: 绿箭头坐标list
+        '''
+        # 增加判断screen，也就是截图是否成功的判断
+        if screen.size:
+            dstPoints = []
+            img2 = cv2.split(screen)
+            # 分离R 二值化
+            ret, dst1 = cv2.threshold(img2[0], 20, 255, cv2.THRESH_BINARY_INV)
+            # 分离G 二值化
+            ret, dst2 = cv2.threshold(img2[1], 220, 255, cv2.THRESH_BINARY)
+            # 分离B 二值化
+            ret, dst3 = cv2.threshold(img2[2], 20, 255, cv2.THRESH_BINARY_INV)
+            img2 = dst1&dst2&dst3 # 相与
+            # 模糊边界
+            img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+            # 找轮廓
+            cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            # 如果找不到的时候，img2是全为0
+            if img2.all() != 0:
+                for c in cnts[1]:
+                    # 获取中心点
+                    M = cv2.moments(c)
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                    #
+                    dstPoints.append((cX,cY))
+
+                    # 画出轮廓和中点
+                    # cv2.drawContours(img2, [c], -1, (0, 255, 0), 2)
+                    # cv2.circle(img2, (cX, cY), 20, (255, 255, 255), 1)
+                    # cv2.putText(img2, "center", (cX - 20, cY - 20),
+                    # cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                    # plt.imshow(img2,cmap='gray')
+                    # plt.show()
+            return dstPoints
+        else:
+            raise Exception('Screen process is unsuccessful')
+    
+    @staticmethod
+    def findTaskBubble(screen):
+        '''
+        检测城市任务那块区域黄色气泡是否出现
+        @return: 是否出现
+        '''
+        dstPoints = []
+        h=len(screen)
+        w=len(screen[0])
+        # 截取气泡周围区域
+        img2 = cv2.split(screen[int(0.777*h):int(0.831*h),int(0.164*w):int(0.284*w)])
+        ret, B = cv2.threshold(img2[0], 120, 255, cv2.THRESH_BINARY_INV)
+        ret, G = cv2.threshold(img2[1], 210, 255, cv2.THRESH_BINARY_INV)
+        ret, R = cv2.threshold(img2[2], 230, 255, cv2.THRESH_BINARY)
+        img2 = R&B&G # 相与
+        # 模糊边界
+        img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+        # 找轮廓
+        cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        if len(cnts[1]):
+            return True
+        else:
+            return False
+    
+    @staticmethod
+    def getPixel(img, rx, ry):
         """
-        工具函数，用于读取图片。
+        获取某一坐标的RGB值(灰度图会报错)
         """
-        return cv2.imread(filepath)
+        pixel = img[int(ry*len(img)), int(rx*len(img[0]))]
+        return pixel[2],pixel[1],pixel[0]
+

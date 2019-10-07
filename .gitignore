@@ -4,7 +4,8 @@
 # Visual Studio Code
 .vscode
 
-
+/test
+/test.py
 # Created by https://www.gitignore.io/api/macos,python,opencv,windows
 # Edit at https://www.gitignore.io/?templates=macos,python,opencv,windows
 
@@ -176,3 +177,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/macos,python,opencv,windows
+log.txt
