@@ -53,7 +53,7 @@ python main.py
 ```
 + 能动就说明能成功运行, 接下来你可以退出脚本(`Ctrl`+`C` 或者 关掉终端窗口), 在`main.py`中修改你的配置
 
-
++ 最佳排布计算强烈推荐这个[euyuil/JiaGuoMengCalculator](https://github.com/euyuil/JiaGuoMengCalculator), 完全在线运行,不需要输入繁琐的等级,只需要星级和别的加成, 就能知道哪个建筑能输出最大火力,最值得升级
 ## 说明
 
 + 建筑编号
