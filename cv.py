@@ -1,6 +1,6 @@
 
 import cv2,numpy as np
-
+from util import GOODS_SAMPLE_POSITIONS
 
 class UIMatcher:
 
@@ -69,7 +69,50 @@ class UIMatcher:
             return True
         else:
             return False
-    
+
+    @staticmethod
+    def findGreenLight(diff_screens):
+        screen_before, screen_after = diff_screens
+        # 转换成有符号数以处理相减后的负值
+        screen_before = screen_before.astype(np.int16)
+        screen_after = screen_after.astype(np.int16)
+
+        diff = screen_after - screen_before
+        h=len(diff)
+        w=len(diff[0])
+        B,G,R = cv2.split(diff)
+        # 负值取0
+        G[G < 0] = 0
+        G = G.astype(np.uint8)
+        # 二值化后相与, 相当于取中间范围内的值
+        ret, G1 = cv2.threshold(G, 140, 255, cv2.THRESH_BINARY_INV)
+        ret, G2 = cv2.threshold(G, 22, 255, cv2.THRESH_BINARY)
+        img0 = G1&G2
+        # 均值模糊(降噪 好像也没啥卵用) 
+        img0 = cv2.medianBlur(img0,9)
+        # import matplotlib.pyplot as plt
+        # plt.imshow(img0,cmap='gray')
+        # plt.show()
+        for pos_ID in range(1,10):
+            x,y = GOODS_SAMPLE_POSITIONS[pos_ID]
+            lineCount = 0
+            for line in range(-6,2): #划8条线, 任意2条足够亮都算
+                sumG = 0
+                for i in range(-10,10):# 取一条线上20个点,取平均值
+                    # 相对坐标
+                    rx = (x+1.73*i)/540
+                    ry = (y+line+i)/960
+                    sumG += img0[int(ry*h),int(rx*w)]
+                # 如果符合条件               
+                if sumG/20 > 250:
+                    lineCount += 1 
+            # 任意2条足够亮   
+            # print(lineCount)       
+            if lineCount > 1:
+                print(pos_ID,"lineCount=",lineCount)
+                return pos_ID
+        return 0
+
     @staticmethod
     def getPixel(img, rx, ry):
         """

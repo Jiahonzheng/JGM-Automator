@@ -65,14 +65,16 @@ class Automator:
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 不管它出不出现，每次都点一下 确定 所在的位置
             self.d.click(550/1080, 1650/1920)
-            self.upgrade([random.choice(self.upgrade_list)])
+            self.upgrade(self.upgrade_list)
             # 滑动屏幕，收割金币。
             self.swipe()
 
     def upgrade(self, upgrade_list):
+        if not len(upgrade_list):
+            return
         self._open_upgrade_interface()
-        for building,count in upgrade_list:
-           self._upgrade_one_with_count(building,count) 
+        building,count = random.choice(upgrade_list)
+        self._upgrade_one_with_count(building,count) 
         self._close_upgrade_interface()
     
     def swipe(self):
@@ -107,32 +109,15 @@ class Automator:
         按住货物，探测绿光出现的位置
         这一段应该用numpy来实现，奈何我对numpy不熟。。。
         '''
-        diff_screen = self.get_screenshot_while_touching(GOODS_POSITIONS[good_id])
-        pos_ID = 0   
-        for pos_ID in range(1,10):
-            # print('hhhh')
-            x,y = GOODS_SAMPLE_POSITIONS[pos_ID]
-            lineCount = 0
-            for line in range(-2,6): #划8条线, 任意2条判定成功都算
-                R,G,B = 0,0,0
-                for i in range(-10,10):# 取一条线上20个点,取平均值
-                    r,g,b = UIMatcher.getPixel(diff_screen, (x+1.73*i)/540,(y+line+i)/960)
-                    R+=r
-                    G+=g
-                    B+=b
-                # 如果符合绿光的条件
-                if R/20 >220   and G/20 < 70:
-                    lineCount += 1           
-            if lineCount > 1:
-                return pos_ID
-        return 0
+        diff_screens = self.get_screenshot_while_touching(GOODS_POSITIONS[good_id]) 
+        return UIMatcher.findGreenLight(diff_screens)
 
     def get_screenshot_while_touching(self, location, pressed_time=0.2):
         '''
         Get screenshot with screen touched.
         '''
-        screen2 = self.d.screenshot(format="opencv")
-        h,w = len(screen2),len(screen2[0])
+        screen_before = self.d.screenshot(format="opencv")
+        h,w = len(screen_before),len(screen_before[0])
         x,y = (location[0] * w,location[1] *h)
         # 按下
         self.d.touch.down(x,y)
@@ -143,8 +128,8 @@ class Automator:
         # print('[%s]Screenning'%time.asctime())
         # 松开
         self.d.touch.up(x,y)
-        # 返回按下前后两幅图的差值
-        return screen- screen2
+        # 返回按下前后两幅图
+        return screen_before, screen
 
     def check_policy(self):
         if not self.auto_policy:
