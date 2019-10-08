@@ -83,11 +83,11 @@
 
 对于上述政策升级页面，我们分离三个通道，并进行二值化，最后检测轮廓。
 
-<img src="./assets/ArrowFind.png" style="zoom:40%" />
+<img src="./assets/ArrowFind.png" style="zoom:50%" />
 
 ### 收火车时，先点按货物，然后检测点按前后绿光差值获取货物目的地
 
-<img src="./assets/Diff2.png" style="zoom:40%" />
+<img src="./assets/GreenSample2.jpeg" style="zoom:40%" />
 
 实现这一功能时，若使用原生 adb shell 实现的话需要多线程或者多进程才行（分别执行按住和截图命令）。在这里，由于 UIAutomator 的强大轮子，使得实现这一功能非常方便。
 
