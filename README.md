@@ -45,20 +45,24 @@
   python -m uiautomator2 init
   ```
 
-- 在手机上打开 ATX ，点击 `启动 UIAutomator` 选项，确保 UIAutomator 是运行的。如果是 MuMu 模拟器，长时间不运行的话，再次运行前也需要执行此操作。
++ 在手机上打开 ATX ，点击`启动 UIAutomator`选项，确保 UIAutomator 是运行的。
++ 如果是mumu模拟器,长时间不运行的话或者重启模拟器后，再次运行家国梦前也需要重新打开ATX(小黄车)
 
-- 如何运行：
++ 如何运行这个脚本:
 
   ```bash
   # 在该项目的文件夹根目录打开
   python main.py
   ```
++ 能动就说明能成功运行, 接下来你可以退出脚本(`Ctrl`+`C` 或者 关掉终端窗口), 在`main.py`中修改你的配置
 
++ 最佳排布计算强烈推荐这个[euyuil/JiaGuoMengCalculator](https://github.com/euyuil/JiaGuoMengCalculator), 完全在线运行,不需要输入繁琐的等级,只需要星级和别的加成, 就能知道哪个建筑能输出最大火力,最值得升级
 ## 说明
 
 ### 建筑编号
 
 <img src="./assets/Screenshot.png" style="zoom:40%" />
+
 
 ### 升级列表和收货列表
 
