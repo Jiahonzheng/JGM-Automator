@@ -22,11 +22,13 @@ class UIMatcher:
             ret, dst3 = cv2.threshold(img2[2], 20, 255, cv2.THRESH_BINARY_INV)
             img2 = dst1&dst2&dst3 # 相与
             # 模糊边界
-            img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+            # img2 = cv2.GaussianBlur(img2, (5, 5), 0)
+            # import matplotlib.pyplot as plt
+            # plt.imshow(img2,cmap='gray')
+            # plt.show()
             # 找轮廓
             cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-            # 如果找不到的时候，img2是全为0
-            if img2.all() != 0:
+            if cnts[1]:
                 for c in cnts[1]:
                     # 获取中心点
                     M = cv2.moments(c)
