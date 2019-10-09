@@ -2,6 +2,7 @@
 
 **本项目仅在分辨率大于 540x960 的 16:9 的设备下正常工作，其他比例不保证**
 
+**重要** 新版本需要额外安装`imutils`这个库,旧版的请重新执行下面的pip命令
 ## 特点
 
 - 🔥🔥🔥 自动升级政策
@@ -24,7 +25,7 @@
   ```bash
   # 打开终端
   # 以下是一整行
-  python -m pip install uiautomator2 opencv-python opencv-contrib-python==3.4.2.16 -i https://pypi.tuna.tsinghua.edu.cn/simple/
+  python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
   ```
 
 - 如果使用 MuMu 模拟器，请先 adb 连接 MuMu 模拟器。
