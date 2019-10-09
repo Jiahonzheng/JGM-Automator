@@ -178,3 +178,4 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/macos,python,opencv,windows
 log.txt
+ocrtest.py

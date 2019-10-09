@@ -10,6 +10,8 @@ def load_json(file: str):
 def get_upgrade_list(json_list: dict):
     return list(zip(json_list['要升级的建筑物'], json_list['对应升级次数']))
 
+# def clip_triangle()
+
 def short_wait():
     time.sleep(0.2)
 
@@ -21,7 +23,7 @@ GOODS_POSITIONS = { 1: (0.609,0.854),
                     2: (0.758,0.815),
                     3: (0.896,0.766)}
 
-# 绿色光环检测的中心位置  540*960下的绝对位置
+# 绿色光环检测的中心位置  540*960下的绝对位置, 用的时候已经变相对位置了
 GOODS_SAMPLE_POSITIONS = {  1: (98, 634),
                             2: (226, 569),
                             3: (346, 508),
