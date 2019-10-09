@@ -10,6 +10,8 @@ def load_json(file: str):
 def get_upgrade_list(json_list: dict):
     return list(zip(json_list['要升级的建筑物'], json_list['对应升级次数']))
 
+# def clip_triangle()
+
 def short_wait():
     time.sleep(0.2)
 

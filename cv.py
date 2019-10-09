@@ -1,6 +1,6 @@
 
 import cv2,numpy as np
-from util import GOODS_SAMPLE_POSITIONS
+from util import *
 
 class UIMatcher:
 
@@ -73,7 +73,7 @@ class UIMatcher:
             return False
 
     @staticmethod
-    def findGreenLight(diff_screens):
+    def findGreenLight(diff_screens, th=100):
         screen_before, screen_after = diff_screens
         # 转换成有符号数以处理相减后的负值
         screen_before = screen_before.astype(np.int16)
@@ -95,25 +95,31 @@ class UIMatcher:
         # import matplotlib.pyplot as plt
         # plt.imshow(img0,cmap='gray')
         # plt.show()
-        for pos_ID in range(1,10):
-            x,y = GOODS_SAMPLE_POSITIONS[pos_ID]
-            lineCount = 0
-            for line in range(-6,2): #划8条线, 任意2条足够亮都算
-                sumG = 0
-                for i in range(-10,10):# 取一条线上20个点,取平均值
-                    # 相对坐标
-                    rx = (x+1.73*i)/540
-                    ry = (y+line+i)/960
-                    sumG += img0[int(ry*h),int(rx*w)]
-                # 如果符合条件               
-                if sumG/20 > 250:
-                    lineCount += 1 
-            # 任意2条足够亮   
-            # print(lineCount)       
-            if lineCount > 1:
-                print(pos_ID,"lineCount=",lineCount)
-                return pos_ID
-        return 0
+        buildings = []
+        for building_ID in range(1,10):
+            square = UIMatcher.getLittleSquare(img0,BUILDING_POSITIONS[building_ID],edge=0.1)
+            buildings.append(np.mean(square))
+        # 返回平均亮度最强的建筑物
+        return buildings.index(max(buildings))+1
+
+    @staticmethod
+    def detectCross(screen, th = 5):
+        '''
+        探测叉叉是否出现, 先截取叉叉所在的小方块,然后对灰度图二值化,再求平均值判断
+        '''
+        screen = cv2.cvtColor(screen,cv2.COLOR_RGB2GRAY)
+        good_id_list = []
+        for good_id in CROSS_POSITIONS.keys():
+            square = UIMatcher.getLittleSquare(screen,CROSS_POSITIONS[good_id])
+            ret, W = cv2.threshold(square, 250, 255, cv2.THRESH_BINARY)
+            # import matplotlib.pyplot as plt
+            # plt.imshow(W,cmap='gray')
+            # plt.show()
+            # 二值化后求平均值
+            if np.mean(W) > th:
+                good_id_list.append(good_id)
+        # print(good_id_list)
+        return good_id_list
 
     @staticmethod
     def getPixel(img, rx, ry):
@@ -123,3 +129,17 @@ class UIMatcher:
         pixel = img[int(ry*len(img)), int(rx*len(img[0]))]
         return pixel[2],pixel[1],pixel[0]
 
+    @staticmethod
+    def getLittleSquare(img, rel_pos, edge=0.01):
+        '''
+        截取rel_pos附近一个小方块
+        '''
+        rx,ry = rel_pos
+        h=len(img)
+        w=len(img[0])
+        scale = h/w
+        x0 = int((rx-edge*scale)*w)
+        x1 = int((rx+edge*scale)*w)
+        y0 = int((ry-edge)*h)
+        y1 = int((ry+edge)*h)
+        return img[y0:y1,x0:x1]

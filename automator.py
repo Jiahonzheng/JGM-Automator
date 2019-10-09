@@ -208,26 +208,8 @@ class Automator:
         '''
         返回有货的位置列表
         '''
-        good_list = []
         screen = self.d.screenshot(format="opencv")  
-        for good_id in CROSS_POSITIONS.keys():
-            if self._detect_cross(screen, CROSS_POSITIONS[good_id]):
-                good_list.append(good_id)
-        return good_list
-       
-    def _detect_cross(self, screen, positon):
-        x,y = positon
-        # print(x,y)
-        R,G,B = 0,0,0
-        for i in range(-4,4):# 取一条45度线线上8个点,取平均值
-            r,g,b = UIMatcher.getPixel(screen, x+i/self.dWidth,y+i/self.dHeight)
-            R+=r
-            G+=g
-            B+=b
-        # 如果符合叉叉（白色）的条件
-        if R/8 >250 and G/8 > 250 and B/8 > 250:
-            return True
-        return False
+        return UIMatcher.detectCross(screen)
 
     def _slide_to_top(self):
         for i in range(3):
