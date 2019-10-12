@@ -1,8 +1,12 @@
 # JGM-Automator
+**🐱🐱10/10/18:20 NoneType报错的临时解决方案是换用openCV3.x版本，如果你不会更换，我已经在requirements中更新，请重新pull下来执行下面语句即可**, 今晚我会认真处理这个问题的
+
+```
+  python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+```
 
 **本项目仅在分辨率大于 540x960 的 16:9 的设备下正常工作，其他比例不保证**
 
-**重要** 新版本需要额外安装`imutils`这个库,旧版的请重新执行下面的pip命令
 ## 特点
 
 - 🔥🔥🔥 自动升级政策
