@@ -60,6 +60,8 @@ class Automator:
                 time.sleep(2)
                 # 重新启动app
                 self.d.app_start("com.tencent.jgm")
+                # 冗余等待游戏启动完毕 
+                time.sleep(10)
                 continue
 
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
