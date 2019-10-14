@@ -157,11 +157,11 @@ class Automator:
                     short_wait()
                     self.d.click(0.511, 0.614) # 确认升级
                     print("[%s] Policy upgraded.    ++++++"%time.asctime())
-                    self._back_to_main()
-
-                    return
+                    break
                 # 如果还没出现绿色箭头，往下划
-                self.d.swipe(0.482, 0.809, 0.491, 0.516,duration = 0.3)
+                else:
+                    self.d.swipe(0.482, 0.809, 0.491, 0.516,duration = 0.3)
+                    time.sleep(3) # 停顿，等待屏幕划动结束
             self._back_to_main()
 
     def check_task(self):
