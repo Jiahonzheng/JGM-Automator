@@ -7,7 +7,7 @@ import random
 
 
 class Automator:
-    def __init__(self, device: str, upgrade_list: list, harvest_filter:list, auto_task = False, auto_policy = True, speedup = True):
+    def __init__(self, device: str, upgrade_list: list, harvest_filter:list, auto_task = False, auto_policy = True, auto_goods = False, speedup = True):
         """
         device: 如果是 USB 连接，则为 adb devices 的返回结果；如果是模拟器，则为模拟器的控制 URL 。
         """
@@ -19,6 +19,7 @@ class Automator:
         self.appRunning = False
         self.auto_task = auto_task
         self.auto_policy = auto_policy
+        self.auto_goods = auto_goods
         self.loot_speedup = speedup
         
     def start(self):
@@ -42,29 +43,8 @@ class Automator:
             self.check_policy()
             # 判断是否可完成任务
             self.check_task()
-            # 判断货物那个叉叉是否出现
-
-            good_id = self._has_good()
-            if len(good_id) > 0:
-                print("[%s] Train come."%time.asctime())
-                self.harvest(self.harvest_filter, good_id)
-            else:
-                print("[%s] No Goods! Wait 2s."%time.asctime())
-                self.swipe()
-                time.sleep(2)
-                continue
-            
-            # 再看看是不是有货没收，如果有就重启app
-            good_id = self._has_good()
-            if len(good_id) > 0 and self.loot_speedup:
-                self.d.app_stop("com.tencent.jgm")
-                print("[%s] Reset app."%time.asctime())
-                time.sleep(2)
-                # 重新启动app
-                self.d.app_start("com.tencent.jgm")
-                # 冗余等待游戏启动完毕
-                time.sleep(15)
-                continue
+            # 判断是否需要扫货
+            self.check_goods()
 
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。
             # 不管它出不出现，每次都点一下 确定 所在的位置
@@ -175,6 +155,29 @@ class Automator:
             self.d.click(0.51, 0.819) # 点击 完成任务
             print("[%s] Task finished.    ++++++"%time.asctime())
             self._back_to_main()
+
+    def check_goods(self):
+        if not self.auto_goods:
+            return
+	# 判断货物那个叉叉是否出现
+        good_id = self._has_good()
+        if len(good_id) > 0:
+            print("[%s] Train come."%time.asctime())
+            self.harvest(self.harvest_filter, good_id)
+        else:
+            print("[%s] No goods! Pls wait 2s."%time.asctime())
+            self.swipe()
+            time.sleep(2)
+            return
+        # 再看看是不是有货没收，如果有就重启app
+        good_id = self._has_good()
+        if len(good_id) > 0 and self.loot_speedup:
+            self.d.app_stop("com.tencent.jgm")
+            print("[%s] Reset app."%time.asctime())
+            time.sleep(2)
+            # 重新启动app
+            self.d.app_start("com.tencent.jgm")
+            time.sleep(15)
 
     def _open_upgrade_interface(self):
         screen = self.d.screenshot(format="opencv")
