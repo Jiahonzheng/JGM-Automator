@@ -1,6 +1,10 @@
 # JGM-Automator
+**NoneType报错的临时解决方案是换用openCV3.x版本，如果你不会更换，请执行**
+```
+  python -m pip install opencv-python==3.* -i https://pypi.tuna.tsinghua.edu.cn/simple/
+```
 
-**本项目仅在分辨率大于 540x960 的 16:9 的设备下正常工作，其他比例不保证**
+**本项目仅在分辨率大于 540x960 的 9:16 的设备下正常工作，其他非9:16比例不保证**
 
 ## 特点
 
@@ -24,7 +28,7 @@
   ```bash
   # 打开终端
   # 以下是一整行
-  python -m pip install uiautomator2 opencv-python opencv-contrib-python==3.4.2.16 -i https://pypi.tuna.tsinghua.edu.cn/simple/
+  python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
   ```
 
 - 如果使用 MuMu 模拟器，请先 adb 连接 MuMu 模拟器。

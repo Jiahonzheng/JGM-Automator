@@ -49,8 +49,10 @@ class Automator:
                 print("[%s] Train come."%time.asctime())
                 self.harvest(self.harvest_filter, good_id)
             else:
-                print("[%s] No Train."%time.asctime())
-                findSomething = True
+                print("[%s] No Goods! Wait 2s."%time.asctime())
+                self.swipe()
+                time.sleep(2)
+                continue
             
             # 再看看是不是有货没收，如果有就重启app
             good_id = self._has_good()
@@ -60,6 +62,8 @@ class Automator:
                 time.sleep(2)
                 # 重新启动app
                 self.d.app_start("com.tencent.jgm")
+                # 冗余等待游戏启动完毕
+                time.sleep(15)
                 continue
 
             # 简单粗暴的方式，处理 “XX之光” 的荣誉显示。

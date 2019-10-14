@@ -1,5 +1,5 @@
 
-import cv2,numpy as np
+import imutils,cv2,numpy as np
 from util import *
 
 class UIMatcher:
@@ -28,8 +28,9 @@ class UIMatcher:
             # plt.show()
             # 找轮廓
             cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-            if cnts[1]:
-                for c in cnts[1]:
+            cnts = cnts[1] if imutils.is_cv3() else cnts[0]
+            if len(cnts):
+                for c in cnts:
                     # 获取中心点
                     M = cv2.moments(c)
                     cX = int(M["m10"] / M["m00"])
