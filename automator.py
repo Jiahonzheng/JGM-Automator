@@ -160,8 +160,8 @@ class Automator:
                     break
                 # 如果还没出现绿色箭头，往下划
                 else:
-                    self.d.swipe(0.482, 0.809, 0.491, 0.516,duration = 0.3)
-                    time.sleep(3) # 停顿，等待屏幕划动结束
+                    self.d.swipe(0.5, 0.8, 0.5, 0.3, duration = 0.3)
+                    self.d.click(0.5, 0.5) # 点击一下屏幕正中间，使其停止滑动
             self._back_to_main()
 
     def check_task(self):

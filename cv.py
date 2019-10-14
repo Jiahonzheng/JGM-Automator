@@ -14,11 +14,11 @@ class UIMatcher:
         if screen.size:
             dstPoints = []
             img2 = cv2.split(screen)
-            # 分离R 二值化
+            # 分离B 二值化
             ret, dst1 = cv2.threshold(img2[0], 20, 255, cv2.THRESH_BINARY_INV)
             # 分离G 二值化
             ret, dst2 = cv2.threshold(img2[1], 220, 255, cv2.THRESH_BINARY)
-            # 分离B 二值化
+            # 分离R 二值化
             ret, dst3 = cv2.threshold(img2[2], 20, 255, cv2.THRESH_BINARY_INV)
             img2 = dst1&dst2&dst3 # 相与
             # 模糊边界
