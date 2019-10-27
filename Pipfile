@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+verify_ssl = true
+
+[dev-packages]
+ipython = "*"
+jupyter = "*"
+weditor = "*"
+
+[packages]
+opencv-contrib-python = "==3.4.2.16"
+opencv-python = "==3.*"
+uiautomator2 = "*"
+imutils = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

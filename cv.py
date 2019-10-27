@@ -144,3 +144,35 @@ class UIMatcher:
         y0 = int((ry-edge)*h)
         y1 = int((ry+edge)*h)
         return img[y0:y1,x0:x1]
+
+    @staticmethod
+    def findRedBagOpen(screen):
+        results = []
+        if screen.size:
+            img2 = cv2.split(screen)
+            ret, dst1 = cv2.threshold(img2[0], 200, 255, cv2.THRESH_BINARY_INV)
+            ret, dst2 = cv2.threshold(img2[1], 160, 240, cv2.THRESH_BINARY)
+            ret, dst3 = cv2.threshold(img2[2], 170, 255, cv2.THRESH_BINARY_INV)
+            
+            img2 = dst1&dst2&dst3 # 相与
+
+            cnts = cv2.findContours(img2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cnts[1] if imutils.is_cv3() else cnts[0]
+            dstPoints = []
+            if len(cnts):
+                for c in cnts:
+                    # 获取中心点
+                    M = cv2.moments(c)
+                    if not M["m00"]:
+                        continue
+                    area = cv2.contourArea(c)
+                    if area < 30000:
+                        continue
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                    #
+                    dstPoints.append((cX,cY))
+
+            return dstPoints
+        else:
+            raise Exception('Screen process is unsuccessful')
