@@ -41,6 +41,14 @@ BUILDING_POSITIONS = {
             9: (787/1080, 447/1920)
         }
 
+
+REDBAG_PHOTO_POSTION = {
+    'small': (216/1080, 700/1920),
+    'middle': (540/1080, 700/1920),
+    'large': (864/1080, 700/1920),
+    'photo': (540/1080, 1413/1920),
+}
+
 # if __name__ == '__main__':
 #     print(get_upgrade_list(load_json('./config.json')))
     
